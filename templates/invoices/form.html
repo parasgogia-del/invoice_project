@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1 class="title">
+  Create Invoice
+</h1>
+
+
+<form method="POST">
+
+
+  <label class="label">
+    Customer
+  </label>
+
+
+  <div class="select">
+
+    <select name="customer">
+
+
+      {% for c in customers %}
+
+      <option value="{{c.id}}">
+
+        {{c.name}}
+
+      </option>
+
+      {% endfor %}
+
+
+    </select>
+
+  </div>
+
+
+
+  <hr>
+
+
+  <h3 class="title is-4">
+    Select Items
+  </h3>
+
+
+
+  {% for item in items %}
+
+
+  <div class="box">
+
+
+    <label>
+
+      <input type="checkbox" name="items" value="{{item.id}}">
+
+
+      {{item.name}}
+
+      -
+      {{item.price}}
+
+
+    </label>
+
+
+    <input class="input" name="qty_{{item.id}}" placeholder="quantity">
+
+
+  </div>
+
+
+  {% endfor %}
+
+
+
+  <hr>
+
+
+
+  <h3 class="title is-4">
+    Custom Item
+  </h3>
+
+
+
+  <input class="input mb-2" name="custom_name" placeholder="Item name">
+
+
+  <input class="input mb-2" name="custom_price" placeholder="Price">
+
+
+
+  <hr>
+
+
+
+  <label class="label">
+
+    Tax %
+
+  </label>
+
+
+  <input class="input" name="tax" placeholder="10">
+
+
+  <br>
+
+
+  <button class="button is-success">
+
+    Create Invoice
+
+  </button>
+
+
+
+</form>
+
+
+
+{% endblock %}

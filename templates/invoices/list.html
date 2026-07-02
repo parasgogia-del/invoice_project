@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+
+<h1 class="title">
+Invoices
+</h1>
+
+<a class="button is-primary" href="/invoices/add"> Create Invoice </a>
+
+<table class="table">
+
+<tr>
+
+<th>ID</th>
+<th>Customer</th>
+<th>Date</th>
+<th>Total</th>
+<th>Action</th>
+
+</tr>
+
+
+
+{% for invoice in invoices %}
+
+
+<tr>
+
+
+<td>
+{{ invoice.id }}
+</td>
+
+
+<td>
+{{ invoice.customer.name }}
+</td>
+
+
+<td>
+{{ invoice.date }}
+</td>
+
+
+<td>
+₹ {{ invoice.total }}
+</td>
+
+
+<td>
+
+<a 
+class="button is-info is-small"
+href="/invoices/{{invoice.id}}">
+
+View Details
+
+</a>
+
+<a 
+class="button is-danger is-small"
+href="/invoices/delete/{{invoice.id}}">
+
+Delete
+
+</a>
+
+
+</td>
+
+
+
+</tr>
+
+
+{% endfor %}
+
+
+</table>
+
+
+{% endblock %}

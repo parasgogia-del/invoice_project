@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 class="title">Items</h1>
+
+<a class="button is-primary" href="/items/add"> Add Item </a>
+
+<table class="table mt-5">
+
+    <tr>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for item in items %}
+    <tr>
+        <td>
+            {{ item.name }}
+        </td>
+
+        <td>
+            {{ item.price }}
+        </td>
+
+        <td>
+            <a class="button is-warning is-small" href="/items/edit/{{item.id}}">Edit</a>
+            <a class="button is-danger is-small" href="/items/delete/{{item.id}}">Delete</a>
+        </td>
+
+    </tr>
+    {% endfor %}
+
+</table>
+
+{% endblock %}

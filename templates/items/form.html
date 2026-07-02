@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 class="title"> Item Form </h1>
+
+<form method="POST">
+
+    <div class="field">
+
+        <label class="label"> Item Name </label>
+
+        <input class="input" name="name" value="{{item.name if item else ''}}">
+
+    </div>
+
+    <div class="field">
+
+        <label class="label"> Price </label>
+
+        <input class="input" name="price" value="{{item.price if item else ''}}">
+
+    </div>
+
+    <button class="button is-success">
+        Save
+    </button>
+
+</form>
+
+{% endblock %}

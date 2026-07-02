@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+</head>
+
+<body>
+    <nav class="navbar">
+
+        <div class="navbar-menu">
+            <a class="navbar-item" href="/">
+                Home
+            </a>
+
+
+            <a class="navbar-item" href="/customers">
+                Customers
+            </a>
+
+
+            <a class="navbar-item" href="/items">
+                Items
+            </a>
+
+
+            <a class="navbar-item" href="/invoices">
+                Invoices
+            </a>
+
+
+        </div>
+
+    </nav>
+
+
+    <section class="section">
+
+
+        {% block content %}
+
+        {% endblock %}
+
+
+    </section>
+</body>
+
+</html>

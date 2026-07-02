@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 class="title">
+    Dashboard
+</h1>
+
+<div class="columns">
+
+    <div class="column">
+
+        <div class="box has-background-primary">
+
+            <h2 class="title">
+                {{customer_count}}
+            </h2>
+
+            <p>
+                Customers
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="column">
+
+        <div class="box has-background-info">
+
+            <h2 class="title">
+                {{item_count}}
+            </h2>
+
+            <p>
+                Items
+            </p>
+
+        </div>
+
+    </div>
+
+    <div class="column">
+
+        <div class="box has-background-warning">
+
+            <h2 class="title">
+                {{invoice_count}}
+            </h2>
+
+            <p>
+                Invoices
+            </p>
+
+        </div>
+
+    </div>
+
+</div>
+
+<h2 class="title is-4">
+    Recent Invoices
+</h2>
+
+<table class="table">
+
+    <tr>
+        <th>ID</th>
+        <th>Customer</th>
+        <th>Total</th>
+    </tr>
+
+    {% for invoice in invoices %}
+
+
+    <tr>
+
+
+        <td>
+
+            <a href="/invoices/{{invoice.id}}">
+
+                {{invoice.id}}
+
+            </a>
+
+        </td>
+
+        <td>
+
+            {{invoice.customer.name}}
+
+        </td>
+
+        <td>
+
+            ₹ {{invoice.total}}
+
+        </td>
+
+    </tr>
+
+    {% endfor %}
+
+</table>
+
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h1 class="title">
+    Invoice #{{invoice.id}}
+</h1>
+
+<div class="box">
+    <h3 class="title is-4">
+        Customer
+    </h3>
+
+    <p>
+        Name:
+        {{invoice.customer.name}}
+    </p>
+
+    <p>
+        Email:
+        {{invoice.customer.email}}
+    </p>
+
+    <p>
+        Phone:
+        {{invoice.customer.phone}}
+    </p>
+
+</div>
+
+<h2 class="title is-4">
+    Items
+</h2>
+
+<table class="table">
+    <tr>
+        <th>Name</th>
+        <th>Price</th>
+        <th>Qty</th>
+        <th>Total</th>
+    </tr>
+
+    {% for item in items %}
+
+    <tr>
+        <td>
+            {{item.item_name}}
+        </td>
+
+        <td>
+            ₹ {{item.price}}
+        </td>
+
+        <td>
+            {{item.quantity}}
+        </td>
+
+        <td>
+            ₹ {{item.price * item.quantity}}
+        </td>
+
+    </tr>
+    {% endfor %}
+
+</table>
+
+<div class="box">
+
+    <p>
+        Subtotal:
+        ₹ {{invoice.subtotal}}
+    </p>
+
+    <p>
+        Tax:
+        {{invoice.tax_percent}} %
+    </p>
+
+    <p>
+        Tax Amount:
+        ₹ {{invoice.tax_amount}}
+    </p>
+
+    <h2 class="title">
+        Total:
+        ₹ {{invoice.total}}
+    </h2>
+</div>
+
+
+<a class="button is-danger" href="/invoice/pdf/{{invoice.id}}">
+    Download PDF
+</a>
+
+{% endblock %}
