@@ -1,6 +1,6 @@
 # Invoice Generator
 
-A full-stack Invoice Generator built with Flask, Peewee ORM, SQLite, Redis, Celery, and Bulma CSS.
+A full-stack Invoice Generator built with Flask, Peewee ORM, SQLite, Redis, and Bulma CSS.
 
 ## Features
 
