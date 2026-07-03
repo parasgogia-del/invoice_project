@@ -3,93 +3,163 @@
 {% block content %}
 
 <h1 class="title">
-    Invoice #{{invoice.id}}
+    Invoice #{{ invoice.id }}
 </h1>
 
 <div class="box">
-    <h3 class="title is-4">
-        Customer
-    </h3>
 
-    <p>
-        Name:
-        {{invoice.customer.name}}
-    </p>
+    <div class="columns">
 
-    <p>
-        Email:
-        {{invoice.customer.email}}
-    </p>
+        <div class="column">
 
-    <p>
-        Phone:
-        {{invoice.customer.phone}}
-    </p>
+            <h3 class="title is-5">
+                Customer Details
+            </h3>
+
+            <p><strong>Name:</strong> {{ invoice.customer.name }}</p>
+            <p><strong>Email:</strong> {{ invoice.customer.email }}</p>
+            <p><strong>Phone:</strong> {{ invoice.customer.phone }}</p>
+
+        </div>
+
+        <div class="column">
+
+            <h3 class="title is-5">
+                Invoice Details
+            </h3>
+
+            <p>
+                <strong>Invoice Date:</strong>
+                {{ invoice.date }}
+            </p>
+
+            <p>
+                <strong>Due Date:</strong>
+                {{ invoice.due_date }}
+            </p>
+
+            <p>
+                <strong>Status:</strong>
+
+                {% if invoice.status == "Pending" %}
+                    <span class="tag is-warning">
+                        {{ invoice.status }}
+                    </span>
+
+                {% elif invoice.status == "Paid" %}
+                    <span class="tag is-success">
+                        {{ invoice.status }}
+                    </span>
+
+                {% elif invoice.status == "Overdue" %}
+                    <span class="tag is-danger">
+                        {{ invoice.status }}
+                    </span>
+
+                {% else %}
+                    <span class="tag">
+                        {{ invoice.status }}
+                    </span>
+                {% endif %}
+
+            </p>
+
+        </div>
+
+    </div>
 
 </div>
 
 <h2 class="title is-4">
-    Items
+    Invoice Items
 </h2>
 
-<table class="table">
-    <tr>
-        <th>Name</th>
-        <th>Price</th>
-        <th>Qty</th>
-        <th>Total</th>
-    </tr>
+<table class="table is-fullwidth is-striped is-hoverable">
 
-    {% for item in items %}
+    <thead>
 
-    <tr>
-        <td>
-            {{item.item_name}}
-        </td>
+        <tr>
 
-        <td>
-            ₹ {{item.price}}
-        </td>
+            <th>Item</th>
 
-        <td>
-            {{item.quantity}}
-        </td>
+            <th>Price</th>
 
-        <td>
-            ₹ {{item.price * item.quantity}}
-        </td>
+            <th>Quantity</th>
 
-    </tr>
-    {% endfor %}
+            <th>Total</th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        {% for item in items %}
+
+        <tr>
+
+            <td>{{ item.item_name }}</td>
+
+            <td>₹ {{ item.price }}</td>
+
+            <td>{{ item.quantity }}</td>
+
+            <td>₹ {{ item.price * item.quantity }}</td>
+
+        </tr>
+
+        {% endfor %}
+
+    </tbody>
 
 </table>
 
 <div class="box">
 
+    <h3 class="title is-5">
+        Invoice Summary
+    </h3>
+
     <p>
-        Subtotal:
-        ₹ {{invoice.subtotal}}
+        <strong>Subtotal:</strong>
+        ₹ {{ invoice.subtotal }}
     </p>
 
     <p>
-        Tax:
-        {{invoice.tax_percent}} %
+        <strong>Tax ({{ invoice.tax_percent }}%) :</strong>
+        ₹ {{ invoice.tax_amount }}
     </p>
 
-    <p>
-        Tax Amount:
-        ₹ {{invoice.tax_amount}}
-    </p>
+    <hr>
 
-    <h2 class="title">
-        Total:
-        ₹ {{invoice.total}}
+    <h2 class="title is-4 has-text-success">
+        Grand Total: ₹ {{ invoice.total }}
     </h2>
+
 </div>
 
+<div class="buttons">
 
-<a class="button is-danger" href="/invoice/pdf/{{invoice.id}}">
-    Download PDF
-</a>
+    <a
+        class="button is-danger"
+        href="/invoice/pdf/{{ invoice.id }}">
+
+        Download PDF
+
+    </a>
+
+    {% if invoice.status != "Paid" %}
+
+    <a
+        class="button is-success"
+        href="/invoice/paid/{{ invoice.id }}">
+
+        Mark as Paid
+
+    </a>
+
+    {% endif %}
+
+</div>
 
 {% endblock %}

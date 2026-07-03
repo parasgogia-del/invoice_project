@@ -1,127 +1,57 @@
-{% extends "base.html" %}
+{% extends "base.html" %} {% block content %}
 
-
-{% block content %}
-
-
-<h1 class="title">
-  Create Invoice
-</h1>
-
+<h1 class="title">Create Invoice</h1>
 
 <form method="POST">
-
-
-  <label class="label">
-    Customer
-  </label>
-
+  <label class="label"> Customer </label>
 
   <div class="select">
-
     <select name="customer">
-
-
       {% for c in customers %}
 
-      <option value="{{c.id}}">
-
-        {{c.name}}
-
-      </option>
+      <option value="{{c.id}}">{{c.name}}</option>
 
       {% endfor %}
-
-
     </select>
-
   </div>
 
+  <hr />
 
-
-  <hr>
-
-
-  <h3 class="title is-4">
-    Select Items
-  </h3>
-
-
+  <h3 class="title is-4">Select Items</h3>
 
   {% for item in items %}
 
-
   <div class="box">
-
-
     <label>
+      <input type="checkbox" name="items" value="{{item.id}}" />
 
-      <input type="checkbox" name="items" value="{{item.id}}">
-
-
-      {{item.name}}
-
-      -
-      {{item.price}}
-
-
+      {{item.name}} - {{item.price}}
     </label>
 
-
-    <input class="input" name="qty_{{item.id}}" placeholder="quantity">
-
-
+    <input class="input" name="qty_{{item.id}}" placeholder="quantity" />
   </div>
-
 
   {% endfor %}
 
+  <hr />
 
+  <h3 class="title is-4">Custom Item</h3>
 
-  <hr>
+  <input class="input mb-2" name="custom_name" placeholder="Item name" />
 
+  <input class="input mb-2" name="custom_price" placeholder="Price" />
 
+  <hr />
 
-  <h3 class="title is-4">
-    Custom Item
-  </h3>
+  <label class="label"> Tax % </label>
 
+  <input class="input" name="tax" placeholder="10" />
 
+  <br />
 
-  <input class="input mb-2" name="custom_name" placeholder="Item name">
+  <input type="date" name="due_date" class="input" />
 
-
-  <input class="input mb-2" name="custom_price" placeholder="Price">
-
-
-
-  <hr>
-
-
-
-  <label class="label">
-
-    Tax %
-
-  </label>
-
-
-  <input class="input" name="tax" placeholder="10">
-
-
-  <br>
-
-
-  <button class="button is-success">
-
-    Create Invoice
-
-  </button>
-
-
-
+  <button class="button is-success">Create Invoice</button>
 </form>
-
-
 
 {% endblock %}

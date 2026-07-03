@@ -1,7 +1,9 @@
 from peewee import *
 
 from database import db
-from datetime import date
+from datetime import date,timedelta
+
+
 
 class BaseModel(Model):
 
@@ -26,7 +28,12 @@ class Invoice(BaseModel):
 
     customer = ForeignKeyField(Customer)
     date = DateField(default=date.today)
-
+    
+    
+    due_date = DateField(
+        default=lambda: date.today() + timedelta(days=7)
+    )
+     
     subtotal = FloatField(default=0)
 
     tax_percent = FloatField(default=0)
@@ -34,6 +41,8 @@ class Invoice(BaseModel):
     tax_amount = FloatField(default=0)
 
     total = FloatField(default=0)
+    
+    status = CharField(default="Pending")
 
 
 class InvoiceItem(BaseModel):

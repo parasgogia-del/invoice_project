@@ -1,4 +1,6 @@
 from flask import Flask,render_template,request,redirect,send_file
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER
 
 from reportlab.platypus import (
     SimpleDocTemplate,
@@ -22,9 +24,30 @@ from models import *
 
 app = Flask(__name__)
 
+
+def update_invoice_status():
+
+    invoices = Invoice.select()
+
+    for invoice in invoices:
+
+        if invoice.status == "Paid":
+            continue
+
+        if invoice.due_date < date.today():
+
+            invoice.status = "Overdue"
+
+        else:
+
+            invoice.status = "Pending"
+
+        invoice.save()
+
 # dashboard
 @app.route("/")
 def dashboard():
+    update_invoice_status()
 
     customer_count = r.get("customer_count")
 
@@ -88,6 +111,7 @@ def add_customer():
             email=request.form["email"],
             phone=request.form["phone"]
         )
+        r.delete("customer_count")
         return redirect("/customers")
     
     return render_template(
@@ -113,7 +137,10 @@ def add_item():
             name=request.form["name"],
             price=request.form["price"]
         )
+        
+        r.delete("item_count")
         return redirect("/items")
+    
     
     return render_template("items/form.html")
 
@@ -124,6 +151,8 @@ def delete_item(id):
     item = Item.get_by_id(id)
 
     item.delete_instance()
+    
+    r.delete("item_count")
 
     return redirect("/items")
 
@@ -141,15 +170,18 @@ def edit_item(id):
         item.price = request.form["price"]
 
         item.save()
-
+        
+        r.delete("item_count")
+        
         return redirect("/items")
-
+    
     return render_template("items/form.html",item=item)
 
 # invoices routes
 @app.route("/invoices")
 def invoices():
-
+    
+    update_invoice_status()
     invoices = Invoice.select()
 
     return render_template(
@@ -169,6 +201,8 @@ def add_invoice():
     if request.method == "POST":
 
         customer = request.form["customer"]
+        
+        due_date = request.form["due_date"]
 
         tax_percent = float(
             request.form["tax"] or 0
@@ -176,7 +210,7 @@ def add_invoice():
 
         invoice = Invoice.create(
             customer=customer,
-
+            due_date=due_date,
             tax_percent=tax_percent
         )
 
@@ -242,8 +276,12 @@ def add_invoice():
         invoice.total = subtotal + tax_amount
 
         invoice.save()
+        
+        r.delete("invoice_count")
 
         return redirect("/invoices")
+    
+    
 
     return render_template("invoices/form.html",customers=customers,items=items)
 
@@ -258,6 +296,8 @@ def delete_invoice(id):
     ).execute()
 
     invoice.delete_instance()
+    
+    r.delete("invoice_count")
 
     return redirect("/invoices")
 
@@ -281,90 +321,236 @@ def invoice_pdf(id):
 
     invoice = Invoice.get_by_id(id)
 
-
     items = InvoiceItem.select().where(
         InvoiceItem.invoice == invoice
     )
 
-
-    filename = "invoice.pdf"
-
+    filename = f"invoice_{invoice.id}.pdf"
 
     doc = SimpleDocTemplate(
         filename,
-        pagesize=letter
+        pagesize=letter,
+        rightMargin=30,
+        leftMargin=30,
+        topMargin=30,
+        bottomMargin=30
     )
-
 
     styles = getSampleStyleSheet()
 
+    title_style = styles["Title"]
+    title_style.alignment = TA_CENTER
+
+    heading = styles["Heading2"]
+
+    normal = styles["Normal"]
+
+    content = []
+
+    # ==================================================
+    # COMPANY HEADER
+    # ==================================================
+
+    content.append(
+        Paragraph(
+            "<b><font size='22'>Korecent Solutions</font></b>",
+            title_style
+        )
+    )
+
+    content.append(
+        Paragraph(
+            "Invoice Management System",
+            styles["Heading3"]
+        )
+    )
+
+    content.append(
+        Paragraph(
+            "Email : info@korecent.com",
+            normal
+        )
+    )
+
+    content.append(
+        Paragraph(
+            "Phone : +91 9876543210",
+            normal
+        )
+    )
+
+    content.append(Spacer(1, 20))
+
+    # ==================================================
+    # INVOICE TITLE
+    # ==================================================
+
+    content.append(
+        Paragraph(
+            "<b><font size='20'>TAX INVOICE</font></b>",
+            title_style
+        )
+    )
+
+    content.append(Spacer(1, 20))
+
+    # ==================================================
+    # INVOICE DETAILS
+    # ==================================================
+
+    content.append(
+        Paragraph(
+            f"""
+            <b>Invoice No:</b> INV-{invoice.id:04d}<br/>
+            <b>Invoice Date:</b> {invoice.date}<br/>
+            <b>Due Date:</b> {invoice.due_date}<br/>
+            <b>Status:</b> {invoice.status}
+            """,
+            normal
+        )
+    )
+
+    content.append(Spacer(1, 15))
+
+    # ==================================================
+    # CUSTOMER DETAILS
+    # ==================================================
+
+    content.append(
+        Paragraph(
+            "<b><font size='14'>Bill To</font></b>",
+            heading
+        )
+    )
+
+    content.append(
+        Paragraph(
+            f"""
+            <b>{invoice.customer.name}</b><br/>
+            {invoice.customer.email}<br/>
+            {invoice.customer.phone}
+            """,
+            normal
+        )
+    )
+
+    content.append(Spacer(1, 20))
+
+    # ==================================================
+    # ITEMS TABLE
+    # ==================================================
 
     data = [
         [
             "Item",
-            "Price",
+            "Unit Price",
             "Qty",
             "Total"
         ]
     ]
 
-
     for item in items:
 
-        data.append(
-            [
-                item.item_name,
-                item.price,
-                item.quantity,
-                item.price * item.quantity
-            ]
-        )
+        data.append([
+            item.item_name,
+            f"Rs. {item.price:,.2f}",
+            item.quantity,
+            f"Rs. {(item.price * item.quantity):,.2f}"
+        ])
 
-    table = PDFTable(data)
+    table = PDFTable(
+        data,
+        colWidths=[180,110,70,120]
+    )
 
     table.setStyle(
         TableStyle([
-            ("GRID",(0,0),(-1,-1),1,None)
+
+            ("BACKGROUND",(0,0),(-1,0),colors.HexColor("#0F62FE")),
+
+            ("TEXTCOLOR",(0,0),(-1,0),colors.white),
+
+            ("FONTNAME",(0,0),(-1,0),"Helvetica-Bold"),
+
+            ("FONTSIZE",(0,0),(-1,0),12),
+
+            ("BOTTOMPADDING",(0,0),(-1,0),10),
+
+            ("TOPPADDING",(0,0),(-1,0),10),
+
+            ("ALIGN",(1,1),(-1,-1),"CENTER"),
+
+            ("GRID",(0,0),(-1,-1),1,colors.grey),
+
+            ("BACKGROUND",(0,1),(-1,-1),colors.beige),
+
+            ("VALIGN",(0,0),(-1,-1),"MIDDLE")
+
         ])
     )
 
-    content = []
-
-    content.append(
-        Paragraph(
-            "INVOICE",
-            styles["Title"]
-        )
-    )
-
-    content.append(Spacer(1,20))
-
-    content.append(
-        Paragraph(
-            f"""
-            Invoice ID: {invoice.id}<br/>
-            Customer: {invoice.customer.name}<br/>
-            Date: {invoice.date}
-            """,
-            styles["Normal"]
-        )
-    )
-
-    content.append(Spacer(1,20))
-
     content.append(table)
 
-    content.append(Spacer(1,20))
+    content.append(Spacer(1, 25))
+
+    # ==================================================
+    # TOTALS TABLE
+    # ==================================================
+
+    totals = [
+
+        ["Subtotal", f"Rs. {invoice.subtotal:,.2f}"],
+
+        ["Tax", f"{invoice.tax_percent}%"],
+
+        ["Tax Amount", f"Rs. {invoice.tax_amount:,.2f}"],
+
+        ["Grand Total", f"Rs. {invoice.total:,.2f}"]
+
+    ]
+
+    total_table = PDFTable(
+        totals,
+        colWidths=[180,180]
+    )
+
+    total_table.setStyle(
+        TableStyle([
+
+            ("BACKGROUND",(0,3),(-1,3),colors.HexColor("#D9EDF7")),
+
+            ("FONTNAME",(0,0),(-1,-1),"Helvetica-Bold"),
+
+            ("GRID",(0,0),(-1,-1),1,colors.grey),
+
+            ("ALIGN",(1,0),(-1,-1),"RIGHT"),
+
+            ("BOTTOMPADDING",(0,0),(-1,-1),8),
+
+            ("TOPPADDING",(0,0),(-1,-1),8)
+
+        ])
+    )
+
+    content.append(total_table)
+
+    content.append(Spacer(1, 40))
+
+    # ==================================================
+    # FOOTER
+    # ==================================================
 
     content.append(
         Paragraph(
-            f"""
-            Subtotal: {invoice.subtotal}<br/>
-            Tax: {invoice.tax_percent}%<br/>
-            Tax Amount: {invoice.tax_amount}<br/>
-            Total: {invoice.total}
-            """,
-            styles["Normal"]
+            "<b>Thank you for your business!</b>",
+            title_style
+        )
+    )
+
+    content.append(
+        Paragraph(
+            "This is a computer generated invoice and does not require a signature.",
+            normal
         )
     )
 
@@ -372,8 +558,22 @@ def invoice_pdf(id):
 
     return send_file(
         os.path.abspath(filename),
-        as_attachment=True
+        as_attachment=True,
+        download_name=filename
     )
+    
+    
+@app.route("/invoice/paid/<int:id>")
+def mark_invoice_paid(id):
+
+    invoice = Invoice.get_by_id(id)
+
+    if invoice.status != "Paid":
+
+        invoice.status = "Paid"
+        invoice.save()
+
+    return redirect(f"/invoices/{id}")
     
 if __name__ == "__main__":
     db.connect()
