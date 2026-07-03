@@ -143,7 +143,6 @@ INVOICE_TASK1-MAIN/
 ```bash
 git clone <repository-url>
 
-cd invoice_generator
 ```
 
 ---
